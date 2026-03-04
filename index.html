@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TRITOU — Poubelle intelligente</title>
+<meta name="description" content="TRITOU : poubelle design inspirée du format Ameru, personnalisable (couleurs + options : composte, écran tactile, indicateur de pleine)." />
+
+<!-- ✅ Import Map (Three + Addons) -->
+<script type="importmap">
+{
+"imports": {
+"three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}
+}
+</script>
+
+<style>
+:root{
+--bg: #0b0f14;
+--card: rgba(255,255,255,.06);
+--stroke: rgba(255,255,255,.10);
+--text: rgba(255,255,255,.92);
+--muted: rgba(255,255,255,.70);
+--muted2: rgba(255,255,255,.55);
+--accent: #9EF01A;
+--accent2: #2dd4bf;
+--shadow: 0 20px 60px rgba(0,0,0,.35);
+--radius: 18px;
+--radius2: 14px;
+--max: 1100px;
+--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family: var(--font);
+color: var(--text);
+background:
+radial-gradient(900px 500px at 20% 10%, rgba(158,240,26,.18), transparent 55%),
+radial-gradient(800px 500px at 80% 20%, rgba(45,212,191,.14), transparent 50%),
+radial-gradient(900px 600px at 50% 100%, rgba(255,255,255,.05), transparent 60%),
+var(--bg);
+min-height:100vh;
+}
+
+a{color:inherit}
+.wrap{max-width:var(--max); margin:0 auto; padding:24px 18px 60px;}
+header{
+display:flex; align-items:center; justify-content:space-between;
+gap:14px;
+position:sticky; top:0; z-index:30;
+backdrop-filter: blur(10px);
+background: linear-gradient(to bottom, rgba(11,15,20,.85), rgba(11,15,20,.55));
+border-bottom:1px solid var(--stroke);
+padding:14px 18px;
+margin:0 -18px 22px;
+}
+.brand{
+display:flex; align-items:center; gap:12px;
+min-width: 240px;
+}
+.brand img{
+width:44px; height:44px; border-radius:12px; object-fit:cover;
+border:1px solid var(--stroke);
+background: rgba(255,255,255,.06);
+}
+.brand .name{
+display:flex; flex-direction:column; line-height:1.1;
+}
+.brand .name strong{letter-spacing:.6px}
+.brand .name span{color:var(--muted2); font-size:13px}
+nav{
+display:flex; gap:14px; flex-wrap:wrap;
+color: var(--muted);
+font-size:14px;
+}
+nav a{opacity:.9; text-decoration:none}
+nav a:hover{opacity:1; text-decoration:underline}
+.cta-top{
+display:flex; gap:10px; align-items:center;
+}
+.btn{
+border:1px solid var(--stroke);
+background: rgba(255,255,255,.06);
+color: var(--text);
+padding:10px 14px;
+border-radius: 999px;
+text-decoration:none;
+font-weight:600;
+font-size:14px;
+display:inline-flex; align-items:center; gap:8px;
+box-shadow: 0 8px 24px rgba(0,0,0,.18);
+transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18)}
+.btn.primary{
+background: linear-gradient(135deg, rgba(158,240,26,.95), rgba(45,212,191,.85));
+color: rgba(0,0,0,.85);
+border-color: transparent;
+}
+.btn.primary:hover{filter:saturate(1.05) brightness(1.03)}
+.chip{
+display:inline-flex; align-items:center; gap:8px;
+padding:7px 10px;
+border-radius: 999px;
+border:1px solid var(--stroke);
+background: rgba(255,255,255,.05);
+color: var(--muted);
+font-size:13px;
+}
+.grid{
+display:grid;
+grid-template-columns: 1.1fr .9fr;
+gap:18px;
+align-items:start;
+}
+@media (max-width: 920px){
+.grid{grid-template-columns:1fr; }
+header{position:relative}
+.brand{min-width:auto}
+}
+
+.card{
+background: var(--card);
+border: 1px solid var(--stroke);
+border-radius: var(--radius);
+box-shadow: var(--shadow);
+overflow:hidden;
+}
+.hero{
+padding:22px;
+}
+.hero h1{
+margin:0 0 8px;
+font-size: clamp(28px, 4vw, 44px);
+letter-spacing: .2px;
+}
+.hero p{
+margin:0;
+color: var(--muted);
+font-size: 16px;
+line-height:1.55;
+}
+.badges{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap}
+.badge{
+padding:8px 10px;
+border-radius: 999px;
+font-size:13px;
+border:1px solid rgba(158,240,26,.25);
+background: rgba(158,240,26,.10);
+color: rgba(255,255,255,.86);
+}
+.badge.alt{
+border-color: rgba(45,212,191,.25);
+background: rgba(45,212,191,.10);
+}
+
+.product-visual{
+padding:22px;
+display:grid;
+gap:14px;
+}
+.mock{
+border-radius: var(--radius);
+border:1px solid var(--stroke);
+background:
+radial-gradient(500px 280px at 40% 20%, rgba(255,255,255,.10), transparent 55%),
+linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+height: 320px;
+display:flex;
+align-items:stretch;
+justify-content:stretch;
+position:relative;
+overflow:hidden;
+}
+#bin3d{
+width:100%;
+height:100%;
+display:block;
+flex:1;
+}
+#webglFallback{
+position:absolute;
+inset:0;
+display:none;
+align-items:center;
+justify-content:center;
+text-align:center;
+padding:18px;
+color: rgba(255,255,255,.80);
+background: rgba(0,0,0,.25);
+font-size:13px;
+line-height:1.5;
+}
+
+.color-note{
+color: var(--muted2);
+font-size:13px;
+line-height:1.45;
+}
+
+.controls{
+padding:18px 18px 20px;
+display:grid;
+gap:14px;
+}
+.controls h2{
+margin:0;
+font-size:18px;
+letter-spacing:.2px;
+}
+.row{
+display:grid;
+gap:10px;
+padding:14px;
+border-radius: var(--radius2);
+border:1px solid var(--stroke);
+background: rgba(255,255,255,.04);
+}
+label{cursor:pointer}
+.colors{
+display:flex; gap:10px; flex-wrap:wrap;
+align-items:center;
+}
+.swatch{
+--c: #fff;
+width:36px; height:36px;
+border-radius: 12px;
+border:1px solid rgba(255,255,255,.25);
+background: var(--c);
+position:relative;
+box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+.swatch input{opacity:0; position:absolute; inset:0; margin:0}
+.swatch:has(input:checked){
+outline: 2px solid rgba(158,240,26,.95);
+outline-offset: 3px;
+}
+.swatch span{
+position:absolute; left:50%; top:calc(100% + 8px);
+transform: translateX(-50%);
+font-size:12px; color: var(--muted2);
+white-space:nowrap;
+pointer-events:none;
+}
+
+.opts{display:grid; gap:10px;}
+.opt{
+display:flex; align-items:flex-start; gap:10px;
+padding:12px;
+border-radius: 14px;
+border:1px solid rgba(255,255,255,.10);
+background: rgba(0,0,0,.14);
+}
+.opt input{margin-top:3px}
+.opt b{display:block; margin-bottom:2px}
+.opt p{margin:0; color: var(--muted2); font-size:13px; line-height:1.4}
+
+.summary{
+display:grid;
+gap:10px;
+padding:14px;
+border-radius: var(--radius2);
+border:1px solid rgba(158,240,26,.18);
+background: rgba(158,240,26,.06);
+}
+.summary .line{
+display:flex; justify-content:space-between; gap:10px;
+color: rgba(70, 69, 69, 0.88);
+font-size:14px;
+}
+.summary .line span{color: var(--muted)}
+.price{font-size:18px; font-weight:900; letter-spacing:.2px;}
+.fine{color: var(--muted2); font-size:12px; line-height:1.45;}
+
+.section{margin-top:18px; display:grid; gap:14px;}
+.section h3{margin:0; font-size:16px}
+.list{margin:0; padding-left:18px; color: var(--muted); line-height:1.55;}
+
+footer{
+margin-top:22px;
+color: var(--muted2);
+font-size:13px;
+display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+padding-top:16px;
+border-top:1px solid var(--stroke);
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<header>
+<div class="brand">
+<img src="logo.png" alt="Logo TRITOU">
+<div class="name">
+<strong>TRITOU</strong>
+<span>Poubelle personnalisable</span>
+</div>
+</div>
+
+<nav>
+<a href="#produit">Produit</a>
+<a href="#options">Options</a>
+<a href="#specs">Caractéristiques</a>
+</nav>
+
+<div class="cta-top">
+<span class="chip">Tarifs : bientôt disponibles</span>
+<a class="btn primary" href="#devis">Demander un devis</a>
+</div>
+</header>
+
+<main class="grid" id="produit">
+<section class="card hero">
+<h1>Avec Tritou, fini le tri flou</h1>
+<p>Une poubelle au format moderne, capacité de 50 litres, hauteur d'environ un mètre.</p>
+
+<div class="badges">
+<span class="badge">8 couleurs</span>
+<span class="badge alt">Options modulables</span>
+<span class="badge">Design premium</span>
+</div>
+
+<div class="section" id="specs">
+<h3>Option disponible</h3>
+<ul class="list">
+<li>Voyant lumineux indiquand lorque l'un des bacs est plein
+<li>Ecran d'information notament le calendrier de collecte de la ville, 
+<li>Système de nettoyage automatique de la plaque de dépôt des déchets,
+<li>Un désodorisant intérieur.
+</li></li>
+</ul>
+</div>
+
+<div class="section">
+<h3>Ce que tu obtiens</h3>
+<ul class="list">
+<li>Un modèle TRITOU configuré selon tes choix</li>
+<li>Un récapitulatif de configuration prêt à envoyer pour devis</li>
+</ul>
+</div>
+</section>
+
+<aside class="card">
+<div class="product-visual">
+<div class="mock" aria-label="Aperçu 3D du produit TRITOU">
+<canvas id="bin3d"></canvas>
+<div id="webglFallback">
+La 3D ne s’affiche pas.<br>
+Ouvre la console (F12 → Console) pour voir l’erreur.
+</div>
+</div>
+
+<div class="color-note">
+Modèle 3D intératif : explorez TRITOU sous tous les angles et personnalisez-le en temps réel.
+</div>
+</div>
+
+<div class="controls" id="options">
+<h2>Configurer ma TRITOU</h2>
+
+<div class="row">
+<b>Couleur</b>
+<div class="colors" role="radiogroup" aria-label="Choix de la couleur">
+<label class="swatch" style="--c:#ffffff" title="Blanc">
+<input type="radio" name="color" value="Blanc" checked><span>Blanc</span>
+</label>
+<label class="swatch" style="--c:#111111" title="Noir">
+<input type="radio" name="color" value="Noir"><span>Noir</span>
+</label>
+<label class="swatch" style="--c:#8a8f98" title="Gris">
+<input type="radio" name="color" value="Gris"><span>Gris</span>
+</label>
+<label class="swatch" style="--c:#2b6cb0" title="Bleu">
+<input type="radio" name="color" value="Bleu"><span>Bleu</span>
+</label>
+<label class="swatch" style="--c:#ff77aa" title="Rose">
+<input type="radio" name="color" value="Rose"><span>Rose</span>
+</label>
+<label class="swatch" style="--c:#ffd400" title="Jaune">
+<input type="radio" name="color" value="Jaune"><span>Jaune</span>
+</label>
+<label class="swatch" style="--c:#ff1a1a" title="Rouge">
+<input type="radio" name="color" value="Rouge"><span>Rouge</span>
+</label>
+<label class="swatch" style="--c:#ff7a18" title="Orange">
+<input type="radio" name="color" value="Orange"><span>Orange</span>
+</label>
+</div>
+</div>
+
+<div class="row">
+<b>Fonctionnalités</b>
+<div class="opts">
+<label class="opt">
+<input type="checkbox" id="optCompost">
+<div><b>Indicateur de poubelle pleine</b><p>Ajoute d'un voyant indiquand lorque l'un des bacs est plein.</p></div>
+</label>
+<label class="opt">
+<input type="checkbox" id="optTouch">
+<div><b>Écran tactile</b><p>Interface simple pour sélectionner des modes et visualiser des infos.</p></div>
+</label>
+<label class="opt">
+<input type="checkbox" id="optFull">
+<div><b>Système de nettoyage automatique </b><p>Nettoyage automatique de la plaque de dépôt des déchets.</p></div>
+</label>
+<label class="opt">
+<input type="checkbox" id="optFull">
+<div><b>Un désodorisant intérieur</b><p> Ajout de charbon actif pour limiter les odeurs.</p></div>
+</label>
+</div>
+</div>
+
+<div class="summary" id="devis">
+<div class="line"><strong>Votre configuration</strong><span id="confColor">Blanc</span></div>
+<div class="line"><strong>Options</strong><span id="confOptions">Aucune</span></div>
+<div class="line"><strong>Prix</strong><span class="price">Tarifs à venir</span></div>
+<div class="fine">
+Le prix évoluera selon les fonctionnalités sélectionnées. En attendant les tarifs, tu peux générer un
+récapitulatif et l’envoyer pour devis.
+</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+<button class="btn primary" type="button" id="btnCopy">Copier le récapitulatif</button>
+<a class="btn" id="btnMail" href="#">Envoyer par email</a>
+</div>
+<div class="fine" id="copyStatus" aria-live="polite"></div>
+</div>
+
+<div class="row">
+<b>À propos du design</b>
+<div class="fine">
+TRITOU adopte une silhouette proche des poubelles “colonne” modernes: compacte, stable,
+facile à intégrer, avec options au choix.
+</div>
+</div>
+</div>
+</aside>
+</main>
+
+<footer>
+<div>© <span id="year"></span> TRITOU — Tous droits réservés</div>
+<div>Contact : <a href="mailto:contact@tritou.fr">contact@tritou.fr</a></div>
+</footer>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const fallback = document.getElementById("webglFallback");
+const showFallback = (msg) => {
+console.error(msg);
+if (fallback) {
+fallback.style.display = "flex";
+fallback.innerHTML = `La 3D ne s’affiche pas.<br><br>${String(msg).replaceAll("<","&lt;")}`;
+}
+};
+
+try {
+// Footer year
+const yearEl = document.getElementById("year");
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+// UI refs
+const confColor = document.getElementById("confColor");
+const confOptions = document.getElementById("confOptions");
+
+const optCompost = document.getElementById("optCompost");
+const optTouch = document.getElementById("optTouch");
+const optFull = document.getElementById("optFull");
+
+const copyBtn = document.getElementById("btnCopy");
+const copyStatus = document.getElementById("copyStatus");
+const btnMail = document.getElementById("btnMail");
+
+function getSelectedColor(){
+const checked = document.querySelector('input[name="color"]:checked');
+return checked ? checked.value : "Blanc";
+}
+function getOptions(){
+const opts = [];
+if(optCompost && optCompost.checked) opts.push("Bac composte");
+if(optTouch && optTouch.checked) opts.push("Écran tactile");
+if(optFull && optFull.checked) opts.push("Indicateur pleine");
+return opts;
+}
+function buildRecap(){
+const color = getSelectedColor();
+const opts = getOptions();
+return [
+"Récapitulatif TRITOU",
+"— Couleur : " + color,
+"— Options : " + (opts.length ? opts.join(", ") : "Aucune"),
+"— Prix : Tarifs à venir (dépend des options)"
+].join("\n");
+}
+
+async function copyRecap(){
+const text = buildRecap();
+try{
+await navigator.clipboard.writeText(text);
+if(copyStatus){
+copyStatus.textContent = "Récapitulatif copié ✔";
+setTimeout(()=> copyStatus.textContent = "", 2500);
+}
+}catch(e){
+const ta = document.createElement("textarea");
+ta.value = text;
+document.body.appendChild(ta);
+ta.select();
+document.execCommand("copy");
+document.body.removeChild(ta);
+if(copyStatus){
+copyStatus.textContent = "Récapitulatif copié ✔";
+setTimeout(()=> copyStatus.textContent = "", 2500);
+}
+}
+}
+if(copyBtn) copyBtn.addEventListener("click", copyRecap);
+
+// ====== 3D (GLB) ======
+const canvas = document.getElementById("bin3d");
+if(!canvas) throw new Error("Canvas #bin3d introuvable");
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 200);
+camera.position.set(2.6, 1.6, 3.6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.1, 0);
+controls.enableZoom = true; // tu peux remettre false si tu veux
+controls.enablePan = false;
+
+// Lights (meilleur pour GLB)
+scene.add(new THREE.HemisphereLight(0xffffff,0xffffff, 1.2));
+const key = new THREE.DirectionalLight(0xffffff, 2.5);
+key.position.set(5, 8, 5);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 1.5);
+fill.position.set(-5, 5, -5);
+scene.add(fill);
+
+// Fond clair
+scene.background = new THREE.Color(0xdfe6ee);
+
+// Sol
+const ground = new THREE.Mesh(
+new THREE.CircleGeometry(1.7, 64),
+new THREE.MeshStandardMaterial({
+color: 0x000000,
+transparent: true,
+opacity: 0.15
+})
+);
+
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0.02;
+scene.add(ground);
+
+// Matériau "couleur du corps" (appliqué au modèle si possible)
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.05 });
+
+// On garde des refs vers objets optionnels si ton GLB a des noms compatibles
+let glbRoot = null;
+let screenObj = null;
+let indicatorObj = null;
+let compostObj = null;
+
+// Charge le GLB (⚠️ le fichier doit être dans le même dossier que index.html)
+const loader = new GLTFLoader();
+loader.load(
+"./TRITOU_3D.glb", // <-- espace encodé
+(gltf) => {
+glbRoot = gltf.scene;
+scene.add(glbRoot);
+
+// Centre + scale auto (utile si ton glb n'est pas à l'échelle)
+const box = new THREE.Box3().setFromObject(glbRoot);
+const size = new THREE.Vector3();
+box.getSize(size);
+const center = new THREE.Vector3();
+box.getCenter(center);
+
+glbRoot.position.sub(center); // centre le modèle à (0,0,0)
+
+// Mets le modèle sur le sol
+const box2 = new THREE.Box3().setFromObject(glbRoot);
+const minY = box2.min.y;
+glbRoot.position.y -= minY; // pose sur y=0
+
+// Ajuste la caméra selon la taille
+const maxDim = Math.max(size.x, size.y, size.z) || 1;
+camera.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.6);
+controls.target.set(0, maxDim * 0.45, 0);
+controls.update();
+
+// Essaie de retrouver des objets par nom dans ton GLB (optionnel)
+// 👉 Dans Blender, tu peux nommer les pièces: "screen", "indicator", "compost"
+screenObj = glbRoot.getObjectByName("screen") || glbRoot.getObjectByName("Screen") || null;
+indicatorObj = glbRoot.getObjectByName("indicator") || glbRoot.getObjectByName("Indicator") || null;
+compostObj = glbRoot.getObjectByName("compost") || glbRoot.getObjectByName("Compost") || null;
+
+// Applique la couleur au modèle (sur tous les meshes)
+applyBodyColor(getSelectedColor());
+
+// Applique visibilité options
+syncFromUI();
+
+if (fallback) fallback.style.display = "none";
+},
+(xhr) => {
+// progress (optionnel)
+// console.log((xhr.loaded / xhr.total * 100) + '% chargé');
+},
+(err) => {
+showFallback(err?.message || err);
+}
+);
+
+function resize() {
+const rect = canvas.getBoundingClientRect();
+const w = Math.max(1, rect.width);
+const h = Math.max(1, rect.height);
+renderer.setSize(w, h, false);
+camera.aspect = w / h;
+camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+requestAnimationFrame(() => resize());
+
+function colorToHex(value){
+const map = {
+"Blanc": 0xf8f9fa,
+"Noir": 0x2b2f36,
+"Gris": 0xb5bcc6,
+"Bleu": 0x007bff,
+"Rose": 0xff2ec4,
+"Jaune": 0xfff200,
+"Orange": 0xff6a00,
+"Rouge": 0xff1a1a
+};
+return map[value] ?? 0xffffff;
+}
+function applyBodyColor(colorName){
+const hex = colorToHex(colorName);
+if(!glbRoot) return;
+
+glbRoot.traverse((obj) => {
+if(!obj.isMesh) return;
+
+// Récupère le chemin des parents (obj + ses parents)
+const chain = [];
+let p = obj;
+while (p) {
+chain.push((p.name || "").toLowerCase());
+p = p.parent;
+}
+
+const isInBody = chain.some(n => n === "body" || n.includes("body"));
+if(!isInBody) return;
+
+// Exclure portes / poignée / couvercle (si dedans)
+const isExcluded = chain.some(n =>
+n.includes("door") || n.includes("handle") || n.includes("lid")
+);
+if(isExcluded) return;
+
+// IMPORTANT : si matériau partagé → on clone pour ne pas recolorer toute la poubelle
+if (Array.isArray(obj.material)) {
+obj.material = obj.material.map(m => m ? m.clone() : m);
+obj.material.forEach(m => { if(m && m.color) m.color.setHex(hex); });
+} else if (obj.material) {
+obj.material = obj.material.clone();
+if(obj.material.color) obj.material.color.setHex(hex);
+}
+});
+}
+function syncFromUI(){
+const color = getSelectedColor();
+const opts = getOptions();
+
+if(confColor) confColor.textContent = color;
+if(confOptions) confOptions.textContent = opts.length ? opts.join(" • ") : "Aucune";
+
+applyBodyColor(color);
+
+// Options visibles si on a trouvé les objets dans le GLB
+if (compostObj) compostObj.visible = !!(optCompost && optCompost.checked);
+if (screenObj) screenObj.visible = !!(optTouch && optTouch.checked);
+if (indicatorObj) indicatorObj.visible = !!(optFull && optFull.checked);
+
+// Mail
+if(btnMail){
+const recap = buildRecap();
+const subject = encodeURIComponent("Devis TRITOU — configuration");
+const bodyMail = encodeURIComponent(
+"Bonjour,\n\nJe souhaite un devis pour une poubelle TRITOU.\n\n" +
+recap + "\n\nMerci."
+);
+btnMail.href = `mailto:?subject=${subject}&body=${bodyMail}`;
+}
+}
+
+document.querySelectorAll('input[name="color"]').forEach(r => r.addEventListener("change", syncFromUI));
+[optCompost, optTouch, optFull].forEach(c => c && c.addEventListener("change", syncFromUI));
+syncFromUI();
+
+function animate() {
+controls.update();
+renderer.render(scene, camera);
+requestAnimationFrame(animate);
+}
+animate();
+
+} catch (err) {
+showFallback(err);
+}
+</script>
+</body>
+</html>
