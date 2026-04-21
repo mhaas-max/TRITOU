@@ -222,6 +222,32 @@ border-color: rgba(45,212,191,.25);
 background: rgba(45,212,191,.10);
 }
 
+.hero-image-box{
+margin-top:18px;
+border-radius: var(--radius2);
+border:1px solid var(--stroke);
+background: rgba(255,255,255,.04);
+padding:14px;
+display:grid;
+gap:10px;
+overflow:hidden;
+}
+
+.hero-image-box img{
+width:100%;
+height:320px;
+display:block;
+border-radius:12px;
+object-fit:contain;
+background: rgba(255,255,255,.03);
+}
+
+.hero-image-caption{
+color: var(--muted2);
+font-size:13px;
+line-height:1.45;
+}
+
 .product-visual{
 padding:22px;
 display:grid;
@@ -388,6 +414,13 @@ color: var(--muted);
 line-height:1.55;
 }
 
+#cartCount{
+display:inline-block;
+min-width:14px;
+text-align:center;
+transition: transform .2s ease;
+}
+
 footer{
 margin-top:22px;
 color: var(--muted2);
@@ -409,7 +442,7 @@ border-top:1px solid var(--stroke);
 <img src="logo.png" alt="Logo TRITOU">
 <div class="name">
 <strong>TRITOU</strong>
-<span> </span>
+<span></span>
 </div>
 </div>
 
@@ -420,7 +453,7 @@ border-top:1px solid var(--stroke);
 </nav>
 
 <div class="cta-top">
-<a class="btn primary" href="#devis">Panier</a>
+<a class="btn primary" href="#devis">Panier (<span id="cartCount">0</span>)</a>
 </div>
 </header>
 
@@ -437,6 +470,13 @@ Une poubelle avec un format moderne, capacité de 50 litres, hauteur d'environ u
 <span class="badge">Intelligence artificielle</span>
 </div>
 
+<div class="hero-image-box">
+<img src="tritou-couleurs.png" alt="TRITOU disponible en plusieurs couleurs">
+<div class="hero-image-caption">
+Découvrez TRITOU dans ses différentes finitions et choisissez la couleur qui correspond le mieux à votre espace.
+</div>
+</div>
+
 <div class="section" id="specs">
 <h3>Fonctionnalités incluses</h3>
 <ul class="list">
@@ -445,14 +485,8 @@ Une poubelle avec un format moderne, capacité de 50 litres, hauteur d'environ u
 <li>Système de nettoyage automatique de la plaque de dépôt</li>
 <li>Désodorisant intérieur pour limiter les odeurs</li>
 <li>3 compartiments différents</li>
-<li>Relier au calendrier de collecte des déchets de la ville</li>
+<li>Connexion au calendrier de collecte des déchets de la ville</li>
 <li>Et plein d'autres options</li>
-</ul>
-</div>
-
-<div class="section">
-<h3></h3>
-<ul class="list">
 </ul>
 </div>
 </section>
@@ -513,6 +547,7 @@ Modèle 3D interactif : explorez TRITOU sous tous les angles et personnalisez sa
 
 <div class="line">
 <strong>Configuration</strong>
+<span>Toutes les fonctionnalités incluses</span>
 </div>
 
 <div class="line">
@@ -525,8 +560,7 @@ Le modèle présenté inclut directement l’ensemble des fonctionnalités TRITO
 </div>
 
 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
-<button class="btn primary" type="button" id="btnCopy">Copier le récapitulatif</button>
-<a class="btn" id="btnMail" href="#">Envoyer par email</a>
+<button class="btn primary" type="button" id="btnCommander">Commander</button>
 </div>
 
 <div class="fine" id="copyStatus" aria-live="polite"></div>
@@ -570,11 +604,13 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 const confColor = document.getElementById("confColor");
 const confPrice = document.getElementById("confPrice");
-const copyBtn = document.getElementById("btnCopy");
+const btnCommander = document.getElementById("btnCommander");
 const copyStatus = document.getElementById("copyStatus");
 const btnMail = document.getElementById("btnMail");
+const cartCount = document.getElementById("cartCount");
 
 const TOTAL_PRICE = 275.99;
+let cart = 0;
 
 function formatPrice(value){
 return value.toLocaleString("fr-FR", {
@@ -593,37 +629,31 @@ const color = getSelectedColor();
 return [
 "Récapitulatif TRITOU",
 "— Couleur : " + color,
-"— Configuration : ",
+"— Configuration : Toutes les fonctionnalités incluses",
 "— Total estimé : " + formatPrice(TOTAL_PRICE)
 ].join("\n");
 }
 
-async function copyRecap(){
-const text = buildRecap();
-
-try{
-await navigator.clipboard.writeText(text);
-if(copyStatus){
-copyStatus.textContent = "Récapitulatif copié ✔";
-setTimeout(() => copyStatus.textContent = "", 2500);
+function addToCart(){
+cart = 1;
+if(cartCount){
+cartCount.textContent = cart;
+cartCount.style.transform = "scale(1.25)";
+setTimeout(() => {
+cartCount.style.transform = "scale(1)";
+}, 200);
 }
-} catch(e){
-const ta = document.createElement("textarea");
-ta.value = text;
-document.body.appendChild(ta);
-ta.select();
-document.execCommand("copy");
-document.body.removeChild(ta);
 
 if(copyStatus){
-copyStatus.textContent = "Récapitulatif copié ✔";
-setTimeout(() => copyStatus.textContent = "", 2500);
-}
+copyStatus.textContent = "Ajouté au panier ✔";
+setTimeout(() => {
+copyStatus.textContent = "";
+}, 2500);
 }
 }
 
-if (copyBtn) {
-copyBtn.addEventListener("click", copyRecap);
+if (btnCommander) {
+btnCommander.addEventListener("click", addToCart);
 }
 
 const canvas = document.getElementById("bin3d");
